@@ -1,6 +1,8 @@
 import {Coil, DiscreteInput, HoldingRegister, InputRegister} from './register.js'
 import {monitoringRegisters, writeRegisters} from './registers-list.js'
 import {client, connectClient} from "./slave-connection.js"
+import fs from 'fs';
+import path from 'path';
 
 global.tcnt_t = 0;
 global.SOC = 0;
@@ -23,24 +25,25 @@ async function calculateSOC(ChargingCurrent, OpenCircuitVoltage, interval) {
 
     const today = new Date();
     tcnt_t += interval;
-    if(tcnt_t >= T_samp) {
+    if (tcnt_t >= T_samp) {
         try {
-            if(today.getHours() == 0 && today.getMinutes() == 0 && today.getSeconds < 6) {
+            if (today.getHours() == 0 && today.getMinutes() == 0 && today.getSeconds < 6) {
                 var intergralCurrent = 0;
             }
             intergralCurrent += ChargingCurrent * T_samp;
             SOC += intergralCurrent / BatteryCapacity;
 
             tcnt_t -= T_samp;
-        } catch(e) {
+        } catch (e) {
             // console.log(e);
         }
     }
 
     return SOC;
 }
+
 //check function readRegisters(slave, callback){
-function readRegisters(callback){
+function readRegisters(callback) {
     let regs = {
         battery: [],
         energyGeneration: [],
@@ -52,39 +55,39 @@ function readRegisters(callback){
         energyConsumption: {}
     };
 
-    for (let module in monitoringRegisters){
-        for (let dataPoint in monitoringRegisters[module]){
+    for (let module in monitoringRegisters) {
+        for (let dataPoint in monitoringRegisters[module]) {
             //check regs[module].push(createRegisterObject(dataPoint, slave, monitoringRegisters[module][dataPoint]));
             regs[module].push(createRegisterObject(dataPoint, client, monitoringRegisters[module][dataPoint]));
         }
     }
     (async () => {
         for (let module in regs) {
-            for (let reg of regs[module]){
-                try{
+            for (let reg of regs[module]) {
+                try {
                     const {data} = await reg.read();
                     //console.log(module + ' ' + reg.getName() + ': ' + data);
-                    readValues[module][reg.getName()] = (reg.scale == null) ? data[0] : data[0]/reg.scale //TODO considers only 1st register
+                    readValues[module][reg.getName()] = (reg.scale == null) ? data[0] : data[0] / reg.scale //TODO considers only 1st register
 
-                    if(module == "battery") {
+                    if (module == "battery") {
                         readValues[module][level] = await calculateSOC(readValues[module][current], readValues[module][voltage], 6000);
                     }
                 } catch (e) {
                     console.log(e);
                 }
             }
-            console.log('read ', module, ' : ' , readValues[module]);
+            console.log('read ', module, ' : ', readValues[module]);
 
-            if(JSON.stringify(readValues[module]) === '{}') {
+            if (JSON.stringify(readValues[module]) === '{}') {
                 console.log('NULL data cnt ', readNullCnt);
-                if(readNullCnt == 20) {
+                if (readNullCnt == 20) {
                     connectClient();
                     readNullCnt = -1;
                 } else {
                     readNullCnt++;
                 }
             } else {
-                if(readNullCnt > -1) {
+                if (readNullCnt > -1) {
                     readNullCnt = -1;
                 }
             }
@@ -118,12 +121,19 @@ export async function writeCharging(value) {
         console.log(e);
     }
 }
+
+const logPath = './time_data.csv'
+
 //check export async function writeDischarging(slave, value) {
-export async function writeDischarging(value) {
+export async function writeDischarging(value, t1) {
     //check const reg = createRegisterObject('discharging', slave, writeRegisters.discharging);
     const reg = createRegisterObject('discharging', client, writeRegisters.discharging);
+    const t2 = Date.now();
     try {
-        return await reg.write(value);
+        const result = await reg.write(value);
+        const logLine = `${t1},${t2},${value}\n`;
+        fs.appendFileSync(logPath, logLine);
+        return result;
     } catch (e) {
         console.log(e);
     }

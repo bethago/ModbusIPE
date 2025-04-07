@@ -6,11 +6,11 @@ export const slaveConfig = {
     stopBits: 1
 };
 
-export const cseUrl = 'http://192.168.0.127:3000/TinyIoT';
+export const cseUrl = 'http://192.168.0.6:3000/TinyIoT';
 
 export const resourceConfig = {
     AE_NAME: 'solar_controller',
-    AE_ORIGIN: 'CAdmin',
+    AE_ORIGIN: 'Csolar_controller',
     API: 'NsorlarController',
     RR: true
 }

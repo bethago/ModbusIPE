@@ -6,56 +6,59 @@ import {monitor, writeCharging, writeDischarging} from './modbus-master.js';
 import {connectClient} from "./slave-connection.js";
 
 //check connect().then(slave => {
-    connectClient();
-    //check monitor(slave, 6000, uploadMonitoringData);
-    monitor(6000, uploadMonitoringData);
+connectClient();
+//check monitor(slave, 6000, uploadMonitoringData);
 
-    const app = express();
-    const port = 3001;
-    app.use(bodyParser.json());
+//no need for test
+//monitor(6000, uploadMonitoringData);
 
-    app.post('/write', async function(req, res) {
-        let chargingValue, dischargingValue;
-        if (req.body["m2m:sgn"].hasOwnProperty('m2m:nev')) {
-            if (req.body["m2m:sgn"]["m2m:nev"]["m2m:rep"]["m2m:fcnt"].hasOwnProperty('charging')) {
-                chargingValue = Number(req.body["m2m:sgn"]["m2m:nev"]["m2m:rep"]["m2m:fcnt"]["charging"]);
-                 console.log('IF charging');
-            }
-            if (req.body["m2m:sgn"]["m2m:nev"]["m2m:rep"]["m2m:fcnt"].hasOwnProperty('discharging')) {
-                dischargingValue = Number(req.body["m2m:sgn"]["m2m:nev"]["m2m:rep"]["m2m:fcnt"]["discharging"]);
-                 console.log('IF discharging');
-            }
+const app = express();
+const port = 3002;
+app.use(bodyParser.json());
+
+app.post('/write', async function (req, res) {
+    let chargingValue, dischargingValue, t1;
+    if (req.body["m2m:sgn"].hasOwnProperty('m2m:nev')) {
+        if (req.body["m2m:sgn"]["m2m:nev"]["m2m:rep"]["m2m:fcnt"].hasOwnProperty('charging')) {
+            chargingValue = Number(req.body["m2m:sgn"]["m2m:nev"]["m2m:rep"]["m2m:fcnt"]["charging"]);
+            console.log('IF charging');
         }
+        if (req.body["m2m:sgn"]["m2m:nev"]["m2m:rep"]["m2m:fcnt"].hasOwnProperty('discharging')) {
+            dischargingValue = Number(req.body["m2m:sgn"]["m2m:nev"]["m2m:rep"]["m2m:fcnt"]["discharging"]);
+            t1 = Number(req.body["m2m:sgn"]["m2m:nev"]["m2m:rep"]["m2m:fcnt"]["t1"]);
+            console.log('IF discharging');
+        }
+    }
 
-        if (chargingValue === 0 || 1 && chargingValue !== undefined){
-            //check const data = await writeCharging(slave, chargingValue);
-	try{
+    if (chargingValue === 0 || 1 && chargingValue !== undefined) {
+        //check const data = await writeCharging(slave, chargingValue);
+        try {
             const data = await writeCharging(chargingValue);
             console.log('charging:' + JSON.stringify(data));
-	} catch(e){
-		console.log(e);
-	}
-        } else if (dischargingValue === 0 || 1 && dischargingValue !== undefined){
-            //check const data = await writeDischarging(slave, dischargingValue);
-	try{
-            const data = await writeDischarging(dischargingValue);
-            console.log('discharging:' + JSON.stringify(data));
-	} catch(e){
-		console.log(e);
-	}
+        } catch (e) {
+            console.log(e);
         }
-        res.sendStatus(200);
-    });
+    } else if (dischargingValue === 0 || 1 && dischargingValue !== undefined) {
+        //check const data = await writeDischarging(slave, dischargingValue);
+        try {
+            const data = await writeDischarging(dischargingValue, t1);
+            console.log('discharging:' + JSON.stringify(data));
+        } catch (e) {
+            console.log(e);
+        }
+    }
+    res.sendStatus(200);
+});
 
-    app.post('/reconnect', async function(req, res) {
-        console.log('reconnect slave req');
-        connectClient();
-        console.log('reconnected the slave');
+app.post('/reconnect', async function (req, res) {
+    console.log('reconnect slave req');
+    connectClient();
+    console.log('reconnected the slave');
 
-        res.sendStatus(200);
-    });
+    res.sendStatus(200);
+});
 
-    app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
 //check }).catch(e => {
 //check     console.log("Could not connect to slave device", e);

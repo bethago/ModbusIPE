@@ -20,7 +20,7 @@ export const monitoringRegisters = {
         },
 
         voltage: {
-            address: 0x331A,               
+            address: 0x331A,
             type: 3,
             length: 1,
             scale: 100

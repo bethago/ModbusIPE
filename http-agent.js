@@ -78,7 +78,7 @@ async function createCNT(url, rn, origin) {
 }
 
 async function createCIN(url, con, origin) {
-    let data = '{\n    "m2m:cin": {\n        "con": "'+ con +'"\n    }\n}';
+    let data = '{\n    "m2m:cin": {\n        "con": "' + con + '"\n    }\n}';
 
     let config = {
         method: 'post',

@@ -39,9 +39,8 @@ export default async function connect() {
 //return true;
 }
 */
-var connectClient = function()
-{
-    if(client.isOpen) {
+var connectClient = function () {
+    if (client.isOpen) {
         console.log('modbustru close');
         client.close();
     }
@@ -51,16 +50,17 @@ var connectClient = function()
 
     console.log('modbustru connect');
     client.connectRTU(slaveConfig.port, {baudRate: slaveConfig.baudRate, parity: slaveConfig.parity})
-    .then(function() {
-        console.log("Connected"); })
-    .catch(function(e) {
-        if(e.errno) {
-            if(networkErrors.includes(e.errno)) {
-                console.log("ModbusRTU need to reconnect");
+        .then(function () {
+            console.log("Connected");
+        })
+        .catch(function (e) {
+            if (e.errno) {
+                if (networkErrors.includes(e.errno)) {
+                    console.log("ModbusRTU need to reconnect");
+                }
             }
-        }
-        console.log(e.message);
-    });
+            console.log(e.message);
+        });
 }
 
-export { client, connectClient }
+export {client, connectClient}
