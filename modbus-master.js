@@ -131,7 +131,8 @@ export async function writeDischarging(value, t1) {
     const t2 = Date.now();
     try {
         const result = await reg.write(value);
-        const logLine = `${t1},${t2},${value}\n`;
+	const t3 = Date.now();
+        const logLine = `${t1},${t2},${t3},${value}\n`;
         fs.appendFileSync(logPath, logLine);
         return result;
     } catch (e) {
