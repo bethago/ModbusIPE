@@ -125,14 +125,14 @@ export async function writeCharging(value) {
 const logPath = './time_data.csv'
 
 //check export async function writeDischarging(slave, value) {
-export async function writeDischarging(value, t1) {
+export async function writeDischarging(value, t1, tr) {
     //check const reg = createRegisterObject('discharging', slave, writeRegisters.discharging);
     const reg = createRegisterObject('discharging', client, writeRegisters.discharging);
     const t2 = Date.now();
     try {
         const result = await reg.write(value);
-	const t3 = Date.now();
-        const logLine = `${t1},${t2},${t3},${value}\n`;
+        const t3 = Date.now();
+        const logLine = `${t1},${t2},${t3},${tr},${value}\n`;
         fs.appendFileSync(logPath, logLine);
         return result;
     } catch (e) {

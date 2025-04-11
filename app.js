@@ -17,6 +17,7 @@ const port = 3002;
 app.use(bodyParser.json());
 
 app.post('/write', async function (req, res) {
+    let tr = Date.now();
     let chargingValue, dischargingValue, t1;
     if (req.body["m2m:sgn"].hasOwnProperty('m2m:nev')) {
         if (req.body["m2m:sgn"]["m2m:nev"]["m2m:rep"]["m2m:fcnt"].hasOwnProperty('charging')) {
@@ -41,7 +42,7 @@ app.post('/write', async function (req, res) {
     } else if (dischargingValue === 0 || 1 && dischargingValue !== undefined) {
         //check const data = await writeDischarging(slave, dischargingValue);
         try {
-            const data = await writeDischarging(dischargingValue, t1);
+            const data = await writeDischarging(dischargingValue, t1, tr);
             console.log('discharging:' + JSON.stringify(data));
         } catch (e) {
             console.log(e);
