@@ -10,14 +10,20 @@ connectClient();
 //check monitor(slave, 6000, uploadMonitoringData);
 
 //no need for test
-monitor(6000, uploadMonitoringData);
+//monitor(6000, uploadMonitoringData);
 
 const app = express();
 const port = 3002;
 app.use(bodyParser.json());
 
+const TIME_OFFSET_MS = 0;
+app.get('/time', (req, res) => {
+    res.json({ utc: Date.now() });  // 밀리초 기준
+});
+
 app.post('/write', async function (req, res) {
     let tr = Date.now();
+    tr = tr - TIME_OFFSET_MS;
     let chargingValue, dischargingValue, t1;
     // if (req.body["m2m:sgn"].hasOwnProperty('m2m:nev')) {
     //     if (req.body["m2m:sgn"]["m2m:nev"]["m2m:rep"]["m2m:fcnt"].hasOwnProperty('charging')) {
